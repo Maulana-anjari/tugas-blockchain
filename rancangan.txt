@@ -1,0 +1,58 @@
+rancangan aplikasi:
+On-chain Aspek:
+Mewakili kepemilikan barang dengan tokenisasi.
+Kontrak pintar untuk memfasilitasi transfer kepemilikan token (barang).
+Smart contracts untuk merepresentasikan kepemilikan barang.
+Fungsi untuk memvalidasi transaksi kepemilikan on-chain.
+Kontrak pintar yang merekam informasi kepemilikan dan pergerakan barang (perubahan lokasi).
+Kontrak untuk memvalidasi dan mendokumentasikan setiap perubahan kepemilikan on-chain.
+
+Off-chain Aspek:
+Database terpusat untuk menyimpan data terperinci mengenai setiap barang.
+Sistem manajemen data untuk update dan validasi data off-chain.
+Sistem manajemen token untuk menggambarkan kepemilikan on-chain secara real-time.
+
+Penggunaan Oracle:
+Oracle digunakan untuk menyinkronkan data off-chain ke smart contracts on-chain termasuk status dan lokasi barang, memastikan konsistensi dan keandalan.
+
+ide aplikasi:
+untuk tracking barang/aset milik negara, 
+on-chain berisi data header barang, owner, kepemindahan kepemilikan
+off-chain berisi database data barang milik negara
+
+kategori barang: tanah dan bangunan, transportasi, elektronik
+pemegang aset: BPKAD tiap kabupaten/kota, badan/lembaga pemerintah, kementrian terkait, dinas terkait
+
+tools:
+smart contract: solidity
+Ethereum smart contract development tool: hardhat
+oracle: chainlink (informasi data kepemilikan dan perpindahan kepemilikan dapat diambil langsung dari smart contracts yang mengelola token ERC-721 di blockchain Ethereum.) gajadi dipake
+database: mongodb (collection berbeda tiap kategori)
+backend framework: express.js
+connect smart contract to backend: web3.js
+token: ERC-721
+test net: ethereum sepolia
+deployment: alchemy
+eksplorer: sepolia etherscan
+
+smart contract:
+token ERC-721 (NFT) untuk merepresentasikan barang unik, metadata: lokasi, pemilik, (dan informasi tambahan yang relevan)
+kepemilikan barang
+perpindahan kepemilikan (hanya bayar gas fee)
+pengelolaan kepemilikan
+validasi kepemilikan
+
+alur dev:
+bikin smart contract di remix terus diimplementasikan ke hardhat terus dideploy ke alchemy
+
+alur app:
+DJKN input pakai postman -> expressjs -> disimpan ke mongodb -> return id -> id disimpan ke NFT bersama informasi lainnya saat minting
+Lembaga login dengan metamask -> 
+
+AKUN 1: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+AKUN 2: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+npx hardhat run scripts/deploy.js --network localhost
+npx hardhat run scripts/deploy.js --network georli
+npx hardhat run scripts/get.js --network localhost
+valueEstimation, location, assetDesc, assetName, assetType, institution, toAddress
+mongo: maulana17anjari yrzZGz7rHG9tInoL

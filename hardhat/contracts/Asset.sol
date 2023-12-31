@@ -1,0 +1,136 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
+contract DJKNAssetToken is ERC721Enumerable, Ownable {
+    using Strings for uint256;
+
+    uint256 private tokenIdCounter = 1;
+
+    struct Asset {
+        string itemName;
+        string location;
+        address owner;
+        uint256 transferCount;
+        uint256 acquisitionDate;
+        uint256 estimatedValue;
+        string itemId;
+    }
+
+    mapping(uint256 => Asset) public assets;
+    mapping(address => uint256[]) private ownerAssets;
+
+    event OwnershipTransferred(
+        uint256 indexed tokenId,
+        address indexed previousOwner,
+        address indexed newOwner
+    );
+
+    constructor(
+        address initialOwner
+    ) ERC721("DJKNAssetToken", "GAT") Ownable(initialOwner) {}
+
+    function mint(
+        address to,
+        string memory itemName,
+        string memory location,
+        uint256 acquisitionDate,
+        uint256 estimatedValue,
+        string memory itemId
+    ) external onlyOwner {
+        _mint(to, tokenIdCounter);
+        assets[tokenIdCounter] = Asset({
+            itemName: itemName,
+            location: location,
+            owner: to,
+            transferCount: 0,
+            acquisitionDate: acquisitionDate,
+            estimatedValue: estimatedValue,
+            itemId: itemId
+        });
+        ownerAssets[to].push(tokenIdCounter);
+        tokenIdCounter++;
+    }
+
+    function getOwnedAssetsCount(
+        address owner
+    ) external view returns (uint256) {
+        return ownerAssets[owner].length;
+    }
+
+    function getOwnedAsset(
+        address owner
+    ) external view returns (string[] memory) {
+        uint256[] storage ownedAssetIds = ownerAssets[owner];
+        string[] memory ownedAssetIdsData = new string[](ownedAssetIds.length);
+
+        for (uint256 i = 0; i < ownedAssetIds.length; i++) {
+            uint256 assetId = ownedAssetIds[i];
+            Asset storage currentAsset = assets[assetId];
+            ownedAssetIdsData[i] = currentAsset.itemId;
+        }
+
+        return ownedAssetIdsData;
+    }
+
+    function getAllItem() external view returns (string[] memory) {
+        uint256 totalAssets = tokenIdCounter;
+        string[] memory allItem = new string[](totalAssets);
+
+        for (uint256 i = 0; i < totalAssets; i++) {
+            allItem[i] = assets[i].itemId;
+        }
+
+        return allItem;
+    }
+
+    function getOwnedAssetId(
+        address owner,
+        uint256 index
+    ) external view returns (uint256) {
+        require(index < ownerAssets[owner].length, "Index out of bounds");
+        return ownerAssets[owner][index];
+    }
+
+    function transferAssetOwnership(
+        uint256 tokenId,
+        address newOwner
+    ) external {
+        require(
+            msg.sender == ownerOf(tokenId),
+            "Only owner can transfer ownership"
+        );
+        require(newOwner != address(0), "Invalid new owner address");
+
+        assets[tokenId].owner = newOwner;
+        assets[tokenId].transferCount++;
+        transferFrom(msg.sender, newOwner, tokenId);
+        removeTokenFromOwner(msg.sender, tokenId);
+        ownerAssets[newOwner].push(tokenId);
+
+        emit OwnershipTransferred(tokenId, msg.sender, newOwner);
+    }
+
+    function getTokenDetails(
+        uint256 tokenId
+    ) external view returns (Asset memory) {
+        return assets[tokenId];
+    }
+
+    // Custom function to remove a token from the owner's array
+    function removeTokenFromOwner(address owner, uint256 tokenId) internal {
+        uint256[] storage ownedTokens = ownerAssets[owner];
+        for (uint256 i = 0; i < ownedTokens.length; i++) {
+            if (ownedTokens[i] == tokenId) {
+                // Move the last element to the position of the element to be removed
+                ownedTokens[i] = ownedTokens[ownedTokens.length - 1];
+                // Remove the last element
+                ownedTokens.pop();
+                return;
+            }
+        }
+    }
+}

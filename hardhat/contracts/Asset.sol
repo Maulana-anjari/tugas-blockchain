@@ -61,30 +61,34 @@ contract DJKNAssetToken is ERC721Enumerable, Ownable {
         return ownerAssets[owner].length;
     }
 
-    function getOwnedAsset(
+    function getOwnedAssets(
         address owner
-    ) external view returns (string[] memory) {
+    ) external view returns (Asset[] memory) {
+        // Dapatkan array ID aset yang dimiliki oleh pemilik
         uint256[] storage ownedAssetIds = ownerAssets[owner];
-        string[] memory ownedAssetIdsData = new string[](ownedAssetIds.length);
 
+        // Deklarasi array storage untuk menyimpan aset-aset yang dimiliki
+        Asset[] memory ownedAssets = new Asset[](ownedAssetIds.length);
+
+        // Loop melalui ID aset dan dapatkan detail aset
         for (uint256 i = 0; i < ownedAssetIds.length; i++) {
             uint256 assetId = ownedAssetIds[i];
-            Asset storage currentAsset = assets[assetId];
-            ownedAssetIdsData[i] = currentAsset.itemId;
+            ownedAssets[i] = assets[assetId];
         }
 
-        return ownedAssetIdsData;
+        // Kembalikan array ownedAssets
+        return ownedAssets;
     }
 
-    function getAllItem() external view returns (string[] memory) {
+    function getAllItems() external view returns (string[] memory) {
         uint256 totalAssets = tokenIdCounter;
-        string[] memory allItem = new string[](totalAssets);
+        string[] memory allItems = new string[](totalAssets);
 
         for (uint256 i = 0; i < totalAssets; i++) {
-            allItem[i] = assets[i].itemId;
+            allItems[i] = assets[i].itemId;
         }
 
-        return allItem;
+        return allItems;
     }
 
     function getOwnedAssetId(
@@ -96,14 +100,16 @@ contract DJKNAssetToken is ERC721Enumerable, Ownable {
     }
 
     function transferAssetOwnership(
-        uint256 tokenId,
+        string memory itemId,
         address newOwner
     ) external {
+        require(newOwner != address(0), "Invalid new owner address");
+        // Find the token ID based on the provided itemId
+        uint256 tokenId = findTokenIdByItemId(itemId);
         require(
             msg.sender == ownerOf(tokenId),
             "Only owner can transfer ownership"
         );
-        require(newOwner != address(0), "Invalid new owner address");
 
         assets[tokenId].owner = newOwner;
         assets[tokenId].transferCount++;
@@ -132,5 +138,19 @@ contract DJKNAssetToken is ERC721Enumerable, Ownable {
                 return;
             }
         }
+    }
+
+    // Helper function to find token ID based on itemId
+    function findTokenIdByItemId(
+        string memory itemId
+    ) internal view returns (uint256) {
+        for (uint256 i = 1; i < tokenIdCounter; i++) {
+            if (
+                keccak256(bytes(assets[i].itemId)) == keccak256(bytes(itemId))
+            ) {
+                return i;
+            }
+        }
+        revert("Asset with itemId not found");
     }
 }

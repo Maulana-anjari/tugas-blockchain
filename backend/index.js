@@ -28,8 +28,10 @@ app.use(
 
 // ? Routes
 const Assets = require("./src/routers/assets.router.js");
+const Institutions = require("./src/routers/institutions.router.js");
 
 app.use("/api/v1/assets", Assets);
+app.use("/api/v1/institutions", Institutions);
 // ? End Routes
 
 // ? Error handling\

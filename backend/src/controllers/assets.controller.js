@@ -1,4 +1,5 @@
 const AssetsModel = require("../models/assets.model");
+const InstitutionsModel = require("../models/institutions.model");
 const ErrorHandler = require("../utils/error-handler");
 exports.index = async (req, res, next) => {
     try {
@@ -17,7 +18,7 @@ exports.index = async (req, res, next) => {
     }
 }
 
-exports.getInventoryByCategory = async (req, res, next) => {
+exports.getAssetsByType = async (req, res, next) => {
     const kategori = req.params.kategori;
     try {
         // isi fungsi
@@ -37,33 +38,37 @@ exports.getInventoryByCategory = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
     try {
-        const { valueEstimation, location, assetDesc, assetName, assetType, institution, toAddress, acquisitionDate } = req.body;
+        const { valueEstimation, location, assetDesc, assetName, assetType, toAddress, acquisitionDate } = req.body;
         const cekBarang = await AssetsModel.findOne({ assetName: assetName });
 
         if (cekBarang) {
             const error = new ErrorHandler(400, "Asset sudah pernah didaftarkan");
             return next(error);
         }
+        const institution = await InstitutionsModel.findOne({ walletAddress: toAddress })
+        if (institution !== null) {
+            const asset = new AssetsModel({
+                toAddress: toAddress,
+                institution: institution.name,
+                assetName: assetName,
+                assetType: assetType,
+                assetDesc: assetDesc,
+                location: location,
+                valueEstimation: valueEstimation,
+                acquisitionDate: acquisitionDate
+            });
 
-        const asset = new AssetsModel({
-            toAddress: toAddress,
-            assetName: assetName,
-            assetType: assetType,
-            assetDesc: assetDesc,
-            location: location,
-            valueEstimation: valueEstimation,
-            institution: institution,
-            acquisitionDate: acquisitionDate
-        });
-
-        await asset.save();
-        res.status(200).json({
-            error: false,
-            message: "Berhasil menyimpan data",
-            data: asset
-        });
+            await asset.save();
+            res.status(200).json({
+                error: false,
+                message: "Berhasil menyimpan data",
+                data: asset
+            });
+        } else {
+            const error = new ErrorHandler(400, "Institusi belum terdaftar");
+            return next(error);
+        }
     } catch (error) {
-        console.error(error);
         return next(error);
     }
 }

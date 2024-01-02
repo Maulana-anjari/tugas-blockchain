@@ -25,6 +25,6 @@ module.exports = {
     }
   },
   paths: {
-    artifacts: '../dashboard/src/artifacts',
+    artifacts: '../frontend/src/artifacts',
   },
 };

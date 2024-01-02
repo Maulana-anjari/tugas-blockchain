@@ -9,6 +9,6 @@ router.post('/', AssetsController.create);
 router.get('/:id', AssetsController.show);
 router.put('/:id', AssetsController.update);
 router.delete('/:id', AssetsController.delete);
-router.get('/kategori/:kategori', AssetsController.getInventoryByCategory);
+router.get('/kategori/:kategori', AssetsController.getAssetsByType);
 
 module.exports = router

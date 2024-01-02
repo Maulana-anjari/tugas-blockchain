@@ -159,7 +159,10 @@ export default function Dashboard() {
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
                 const contract = new ethers.Contract(smartContractAddress, Asset.abi, signer);
-                const transaction = await contract.mint(String(to), String(itemName), String(location), 11, parseInt(estimatedValue, 10), String(itemId));
+                const options = {
+                    gasLimit: 2000000, // Set your preferred gas limit
+                };
+                const transaction = await contract.mint(String(to), String(itemName), String(location), 11, parseInt(estimatedValue, 10), String(itemId), options);
 
                 await transaction.wait();
                 console.log("Success minted!");

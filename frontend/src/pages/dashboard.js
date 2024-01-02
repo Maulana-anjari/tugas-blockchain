@@ -10,7 +10,7 @@ import MetaMaskButton from "../components/metamaskButton.js";
 import TokenList from "../components/tokens.js";
 import Asset from "./../artifacts/contracts/Asset.sol/DJKNAssetToken.json";
 // The contract address
-const smartContractAddress = "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e";
+const smartContractAddress = "0xd20298B919aBFc1aC5183CEDCc3Cd692eeab602B";
 // The backend address
 const URL = "http://localhost:5000"
 export default function Dashboard() {

@@ -10,7 +10,7 @@ import MetaMaskButton from "../components/metamaskButton.js";
 import TokenList from "../components/tokens.js";
 import Asset from "./../artifacts/contracts/Asset.sol/DJKNAssetToken.json";
 // The contract address
-const smartContractAddress = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6";
+const smartContractAddress = "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e";
 // The backend address
 const URL = "http://localhost:5000"
 export default function Dashboard() {
@@ -19,6 +19,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(false);
     const [institutions, setInstitutions] = useState([]);
     const [assetsOwned, setAssetsOwned] = useState([]);
+    const [institutionLoggedIn, setInstitutionLoggedIn] = useState("");
     const [address, setAddress] = useState("");
     const [totalSupply, setTotalSupply] = useState("");
     const [nftName, setNftName] = useState("");
@@ -62,8 +63,6 @@ export default function Dashboard() {
         setLoading(true);
         const checkOwner = await axios.get(`${URL}/api/v1/assets/${itemId}`)
         const owner = checkOwner.data.data.toAddress
-        console.log(nftOwner)
-        console.log(owner)
         if (nftOwner !== owner) {
             Notify.failure(`Transfer hanya bisa dilakukan oleh pemilik asset`);
             setLoading(false);
@@ -97,7 +96,6 @@ export default function Dashboard() {
         axios
             .post(`${URL}/api/v1/institutions`, institutionData)
             .then((response) => {
-                const institutionId = response.data.data._id
                 Notify.success('Berhasil menyimpan!');
                 setLoading(false);
             }).catch((error) => {
@@ -169,7 +167,7 @@ export default function Dashboard() {
                 setLoading(false);
             } catch (error) {
                 console.log("Error: ", error)
-                Notify.failure(`Terjadi kesalahan: ${error.response.data.message}`);
+                Notify.failure(`Terjadi kesalahan: ${error}`);
                 handleRemove(itemId)
                 setLoading(false);
             }
@@ -251,15 +249,12 @@ export default function Dashboard() {
                         eth_accounts: {},
                     }],
                 });
-                console.log("Disconnected from MetaMask");
-                // Lakukan tindakan lain setelah keluar dari koneksi
+                Notify.success('Disconnected from MetaMask');
             } catch (error) {
-                console.error("Error disconnecting from MetaMask:", error);
-                // Handle error jika diperlukan
+                Notify.failure(`Error disconnecting from MetaMask: ${error}`);
             }
         } else {
-            console.warn("MetaMask not detected");
-            // Handle jika MetaMask tidak terdeteksi
+            Notify.warning(`MetaMask not detected`);
         }
     }
     useEffect(() => {
@@ -272,8 +267,15 @@ export default function Dashboard() {
                 console.error('Error fetching data:', error);
             }
         };
+        const getInstitutionLoggedIn = async () => {
+            if (address !== "") {
+                const response = await axios.get(`${URL}/api/v1/institutions/${address}`);
+                setInstitutionLoggedIn(response.data.data.name)
+            }
+        }
         fetchData();
-    }, [])
+        getInstitutionLoggedIn();
+    }, [address])
     return (
         <>
             <Helmet>
@@ -281,7 +283,7 @@ export default function Dashboard() {
             </Helmet>
             {loading ? Loading.dots() : Loading.remove()}
             <div className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-                <h1>Welcome {address === process.env.REACT_APP_PUBLIC_KEY ? "DJKN" : "PNS"} !</h1>
+                <h1>Welcome {institutionLoggedIn}!</h1>
                 <h3></h3>
                 <h6>Your wallet address: {address}</h6>
                 <div className="mt-10 flex items-center justify-center gap-x-6">
@@ -289,7 +291,7 @@ export default function Dashboard() {
                         onClick={disconnectFromMetaMask}
                         className="rounded-md bg-red-700 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xl hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                     >
-                        Logout
+                        (5) Logout
                     </button>
                 </div>
                 {address === "" ? <MetaMaskButton onClick={connectToMetamask()} /> : ""}
@@ -302,7 +304,7 @@ export default function Dashboard() {
                             onClick={getInfoToken}
                             className="rounded-md bg-cyan-700 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xl hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                         >
-                            Get Info Token - Assets
+                            (1) Get Info Token - Assets
                         </button>
                     </div>
                     <form onSubmit={handleInstitution}>
@@ -359,7 +361,7 @@ export default function Dashboard() {
                             <button
                                 className="rounded-md bg-yellow-700 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xl hover:bg-yellow-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                             >
-                                Save Institution!
+                                (2) Save Institution!
                             </button>
                         </div>
                     </form>
@@ -422,7 +424,7 @@ export default function Dashboard() {
                             <button
                                 className="rounded-md bg-violet-700 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xl hover:bg-violet-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                             >
-                                Transfer Responsibility (Owner)!
+                                (4) Transfer Responsibility (Owner)!
                             </button>
                             {institutions?.map((item) => {
                                 <h6>item: {item.name}</h6>
@@ -563,7 +565,7 @@ export default function Dashboard() {
                             <button
                                 className="rounded-md bg-green-700 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xl hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                             >
-                                Jadikan NFT!
+                                (3) Jadikan NFT!
                             </button>
                         </div>
                     </form>) : ""}

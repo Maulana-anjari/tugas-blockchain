@@ -61,23 +61,19 @@ contract DJKNAssetToken is ERC721Enumerable, Ownable {
         return ownerAssets[owner].length;
     }
 
-    function getOwnedAssets(
+    function getOwnedAsset(
         address owner
-    ) external view returns (Asset[] memory) {
-        // Dapatkan array ID aset yang dimiliki oleh pemilik
+    ) external view returns (string[] memory) {
         uint256[] storage ownedAssetIds = ownerAssets[owner];
+        string[] memory ownedAssetIdsData = new string[](ownedAssetIds.length);
 
-        // Deklarasi array storage untuk menyimpan aset-aset yang dimiliki
-        Asset[] memory ownedAssets = new Asset[](ownedAssetIds.length);
-
-        // Loop melalui ID aset dan dapatkan detail aset
         for (uint256 i = 0; i < ownedAssetIds.length; i++) {
             uint256 assetId = ownedAssetIds[i];
-            ownedAssets[i] = assets[assetId];
+            Asset storage currentAsset = assets[assetId];
+            ownedAssetIdsData[i] = currentAsset.itemId;
         }
 
-        // Kembalikan array ownedAssets
-        return ownedAssets;
+        return ownedAssetIdsData;
     }
 
     function getAllItems() external view returns (string[] memory) {

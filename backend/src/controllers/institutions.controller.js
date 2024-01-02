@@ -46,10 +46,10 @@ exports.create = async (req, res, next) => {
 
 
 exports.show = async (req, res, next) => {
-    const idInstitusi = req.params.id
+    const walletAddress = req.params.id
     try {
         // isi fungsi
-        const asset = await InstitutionsModel.findOne({ _id: idInstitusi });
+        const asset = await InstitutionsModel.findOne({ walletAddress: walletAddress });
         if (!asset) {
             const error = new ErrorHandler(400, "Institusi tidak ditemukan");
             return next(error);
